@@ -62,3 +62,11 @@ export default function App() {
     </div>
   );
 }
+
+
+// adicionar rotas com o react router-dom
+// criar uma pagina de detalhes da tarefa
+// criar uma pagina de editar tarefa
+// criar uma pagina de listar tarefas completadas
+// criar uma pagina de listar tarefas pendentes
+// criar uma pagina de listar todas as tarefas
