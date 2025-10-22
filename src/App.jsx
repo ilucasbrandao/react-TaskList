@@ -1,29 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Importe o useEffect
+import { Routes, Route } from "react-router-dom";
 import { Tasks } from "./components/Tasks";
 import { AddTasks } from "./components/AddTasks";
+import { Navigation } from "./components/Navigation";
+import { TaskDetails } from "./pages/TaskDetails";
+import { EditTask } from "./pages/EditTask";
+import { PendingTasks } from "./pages/PendingTasks";
+import { CompletedTasks } from "./pages/CompletedTasks";
+
+// Chave para usar no localStorage
+const LOCAL_STORAGE_KEY = "minhas-tarefas-app";
 
 export default function App() {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "Estudar React",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Estudar TypeScript",
-      completed: false,
-    },
-    {
-      id: 3,
-      title: "Estudar JavaScript",
-      completed: false,
-    },
-  ]);
+
+
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedTasks) {
+      return JSON.parse(savedTasks);
+    } else {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
+  }, [tasks]);
+
 
   function addTask(title, description) {
     const newTask = {
-      id: tasks.length + 1,
+      id: crypto.randomUUID(),
       title,
       description,
       completed: false
@@ -31,9 +38,18 @@ export default function App() {
     setTasks([...tasks, newTask])
   }
 
+  function editTask(id, newTitle, newDescription) {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === id) {
+        return { ...task, title: newTitle, description: newDescription };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  }
+
   function onChecked(id) {
     const newTasks = tasks.map(task => {
-
       if (task.id === id) {
         return {
           ...task, completed: !task.completed
@@ -50,23 +66,41 @@ export default function App() {
   }
 
   return (
-    <div className="w-screen h-screen bg-slate-500 flex justify-center p-6">
-      <div className="w-[500px] space-y-4" >
+    <div className="w-screen min-h-screen bg-slate-500 flex justify-center p-6">
+      <div className="w-[700px] space-y-4" >
         <h1 className="text-3xl text-slate-100 font-bold text-center">
           Gerenciamento de Tarefas
         </h1>
 
-        <AddTasks addTask={addTask} />
-        <Tasks tasks={tasks} onChecked={onChecked} onDelete={onDelete} />
+        <Navigation />
+
+        <Routes>
+          <Route path="/" element={<AddTasks addTask={addTask} />} />
+          <Route path="/pending" element={<AddTasks addTask={addTask} />} />
+          <Route path="/completed" element={<AddTasks addTask={addTask} />} />
+        </Routes>
+
+        <Routes>
+          <Route
+            path="/"
+            element={<Tasks tasks={tasks} onChecked={onChecked} onDelete={onDelete} />}
+          />
+
+          <Route
+            path="/pending"
+            element={<PendingTasks tasks={tasks} onChecked={onChecked} onDelete={onDelete} />}
+          />
+
+          <Route
+            path="/completed"
+            element={<CompletedTasks tasks={tasks} onChecked={onChecked} onDelete={onDelete} />}
+          />
+
+          <Route path="/task/:id" element={<TaskDetails tasks={tasks} />} />
+
+          <Route path="/edit/:id" element={<EditTask tasks={tasks} editTask={editTask} />} />
+        </Routes>
       </div>
     </div>
   );
 }
-
-
-// adicionar rotas com o react router-dom
-// criar uma pagina de detalhes da tarefa
-// criar uma pagina de editar tarefa
-// criar uma pagina de listar tarefas completadas
-// criar uma pagina de listar tarefas pendentes
-// criar uma pagina de listar todas as tarefas
